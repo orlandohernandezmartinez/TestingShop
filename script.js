@@ -230,15 +230,11 @@ function stopRecording() {
 // Función para enviar el audio a Whisper y obtener la transcripción
 async function transcribeAudio(audioBlob) {
   const formData = new FormData();
-  formData.append("file", audioBlob, "audio.wav");  // Enviar el Blob de audio
-  formData.append("model", "whisper-1");
+  formData.append("file", audioBlob, "audio.wav");  // Enviar el archivo de audio al backend
 
   try {
-    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer YOUR_OPENAI_API_KEY`,  // Coloca tu API Key de OpenAI aquí
-      },
+    const response = await fetch('/api/transcribe', {  // Apunta a la función API en Vercel
+      method: 'POST',
       body: formData,
     });
 
