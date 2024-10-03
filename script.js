@@ -31,12 +31,16 @@ document.addEventListener("DOMContentLoaded", function () {
   micBtn.addEventListener('mouseleave', stopCounting);
 
   // Evento para enviar un mensaje cuando se presione el botón de enviar
-  sendBtn.addEventListener('click', sendMessage);
+  sendBtn.addEventListener('click', () => {
+    const input = document.getElementById('user-input').value.trim();
+    sendMessage(input);
+  });
 
   // Evento para enviar mensaje con la tecla Enter
   document.getElementById('user-input').addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
-      sendMessage();
+      const input = document.getElementById('user-input').value.trim();
+      sendMessage(input);
     }
   });
 });
@@ -60,10 +64,8 @@ function sendPreloadedMessage(message) {
   sendMessage(message);
 }
 
-function sendMessage(preloadedMessage = null) {
-  const input = document.getElementById('user-input');
+async function sendMessage(messageText) {
   const chatBody = document.getElementById('chat-body');
-  const messageText = preloadedMessage ? preloadedMessage : input.value.trim();
 
   if (messageText.length > 0) {
     // Eliminar el mensaje inicial y los botones de mensajes precargados
@@ -79,46 +81,31 @@ function sendMessage(preloadedMessage = null) {
     chatBody.appendChild(userMessage);
 
     // Limpiar el input
-    input.value = '';
+    document.getElementById('user-input').value = '';
     toggleSendButton();
 
-    // Verificar si el mensaje del usuario contiene las palabras clave
-    const keywords = ['imagen', 'foto', 'producto'];
-    const containsKeyword = keywords.some(keyword => messageText.toLowerCase().includes(keyword));
+    try {
+      // Llamada al backend a través de la API en Vercel
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: messageText }),
+      });
 
-    if (containsKeyword) {
-      // Responder con el mensaje y renderizar el cuadro del producto
-      setTimeout(() => {
-        const botMessage = document.createElement('div');
-        botMessage.className = 'bot-message';
-        botMessage.textContent = 'Este es el producto que buscas?';
-        chatBody.appendChild(botMessage);
+      const data = await response.json();
 
-        // Crear el cuadro del producto clicable
-        const productBox = document.createElement('div');
-        productBox.style.width = '100px';
-        productBox.style.height = '100px';
-        productBox.style.backgroundColor = '#BABABA';
-        productBox.style.marginTop = '10px';
-        productBox.style.borderRadius = '5px';
-        productBox.style.cursor = 'pointer';  // Hacer el cuadro clicable
-        productBox.onclick = showProductView;  // Abrir la vista de producto al hacer clic
-        chatBody.appendChild(productBox);
+      // Mostrar la respuesta en el chat
+      const botMessage = document.createElement('div');
+      botMessage.className = 'bot-message';
+      botMessage.textContent = data.response;
+      chatBody.appendChild(botMessage);
 
-        // Desplazar hacia abajo para ver el nuevo mensaje
-        chatBody.scrollTop = chatBody.scrollHeight;
-      }, 500);
-    } else {
-      // Si no hay palabra clave, responde con un mensaje genérico
-      setTimeout(() => {
-        const botMessage = document.createElement('div');
-        botMessage.className = 'bot-message';
-        botMessage.textContent = 'Message received';
-        chatBody.appendChild(botMessage);
-
-        // Desplazar hacia abajo para ver el nuevo mensaje
-        chatBody.scrollTop = chatBody.scrollHeight;
-      }, 500);
+      // Desplazar hacia abajo para ver el nuevo mensaje
+      chatBody.scrollTop = chatBody.scrollHeight;
+    } catch (error) {
+      console.error('Error al enviar el mensaje:', error);
     }
   }
 }
