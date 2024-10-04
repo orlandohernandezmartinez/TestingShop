@@ -5,29 +5,40 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def handler(event, context):
-    body = json.loads(event['body'])
-    user_message = body.get('message', '')
+    try:
+        body = json.loads(event['body'])
+        user_message = body.get('message', '')
 
-    # Procesar el mensaje del usuario
-    history = [
-        {"role": "system", "content": "Eres un asistente personal de compras del ecommerce mayyalimitless."},
-        {"role": "user", "content": user_message}
-    ]
-    
-    # Generar la respuesta con OpenAI
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=history
-    )
+        # Procesar el mensaje del usuario
+        history = [
+            {"role": "system", "content": "Eres un asistente personal de compras del ecommerce mayyalimitless."},
+            {"role": "user", "content": user_message}
+        ]
+        
+        # Generar la respuesta con OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=history
+        )
 
-    assistant_message = response.choices[0].message['content']
-    
-    # Retornar la respuesta al frontend
-    return {
-        "statusCode": 200,
-        "body": json.dumps({"response": assistant_message}),
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
+        assistant_message = response.choices[0].message['content']
+        
+        # Retornar la respuesta al frontend
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"response": assistant_message}),
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            }
         }
-    }
+    except Exception as e:
+        # Manejar errores y devolver una respuesta clara
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)}),
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            }
+        }
