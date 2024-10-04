@@ -1,8 +1,9 @@
 import json
 import os
-from openai import OpenAI
+import openai  # Cambiado a importar todo el módulo
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Configurar la clave API de OpenAI
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def handler(event, context):
     try:
@@ -15,13 +16,13 @@ def handler(event, context):
             {"role": "user", "content": user_message}
         ]
         
-        # Generar la respuesta con OpenAI
-        response = client.chat.completions.create(
-            model="gpt-4o",
+        # Generar la respuesta con OpenAI (Corregido para usar openai.ChatCompletion)
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # Cambiado a gpt-4
             messages=history
         )
 
-        assistant_message = response.choices[0].message['content']
+        assistant_message = response['choices'][0]['message']['content']
         
         # Retornar la respuesta al frontend
         return {
