@@ -5,9 +5,9 @@ import openai
 # Configurar la clave API de OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def handler(event, context):
+def vercel_handler(event, context):
     try:
-        # Convertir el cuerpo de la solicitud en JSON
+        # Asegúrate de manejar la solicitud JSON correctamente
         body = json.loads(event.get('body', '{}'))
         user_message = body.get('message', '')
 
@@ -19,7 +19,7 @@ def handler(event, context):
         
         # Generar la respuesta con OpenAI
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Cambia a "gpt-4" si tienes acceso
+            model="gpt-3.5-turbo",
             messages=history
         )
 
@@ -36,7 +36,7 @@ def handler(event, context):
         }
     
     except Exception as e:
-        # Enviar una respuesta de error en caso de excepción
+        # Manejar errores y devolver una respuesta clara
         return {
             "statusCode": 500,
             "body": json.dumps({"error": str(e)}),
