@@ -1,15 +1,14 @@
 import json
 import os
-import openai  # Cambiado a importar todo el módulo
+import openai
 
 # Configurar la clave API de OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Cambiamos el handler para que sea compatible con Vercel
-def handler(req, res):
+def handler(event, context):
     try:
         # Convertir el cuerpo de la solicitud en JSON
-        body = json.loads(req.body)
+        body = json.loads(event.get('body', '{}'))
         user_message = body.get('message', '')
 
         # Procesar el mensaje del usuario
@@ -20,15 +19,29 @@ def handler(req, res):
         
         # Generar la respuesta con OpenAI
         response = openai.ChatCompletion.create(
-            model="gpt-4",
+            model="gpt-3.5-turbo",  # Cambia a "gpt-4" si tienes acceso
             messages=history
         )
 
         assistant_message = response['choices'][0]['message']['content']
         
-        # Responder con la respuesta del asistente
-        return res.status(200).json({"response": assistant_message})
+        # Responder con la respuesta del asistente en el formato esperado
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"response": assistant_message}),
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            }
+        }
     
     except Exception as e:
         # Enviar una respuesta de error en caso de excepción
-        return res.status(500).json({"error": str(e)})
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": str(e)}),
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"
+            }
+        }
