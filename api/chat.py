@@ -2,10 +2,8 @@ import json
 import os
 import openai
 
-# Configurar la clave API de OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Cambia el nombre de la función a `handler`
 def handler(event, context):
     try:
         body = json.loads(event.get('body', '{}'))
@@ -16,13 +14,14 @@ def handler(event, context):
             {"role": "user", "content": user_message}
         ]
 
+        # Llama a la función compatible con la versión reciente de openai
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=history
         )
 
         assistant_message = response['choices'][0]['message']['content']
-        
+
         return {
             "statusCode": 200,
             "body": json.dumps({"response": assistant_message}),
@@ -40,3 +39,11 @@ def handler(event, context):
                 "Access-Control-Allow-Origin": "*"
             }
         }
+# Simulación del evento si ejecutas directamente
+if __name__ == "__main__":
+    # Simula un evento de ejemplo
+    event = {
+        "body": json.dumps({"message": "Hola, estoy buscando zapatos de running"})
+    }
+    response = handler(event, None)
+    print(response)
